@@ -1,0 +1,28 @@
+# n8n-ansible/roles/n8n/main.yml
+
+- name: Create persistent data directory for n8n
+  ansible.builtin.file:
+    path: "{{ n8n_data_path }}" # Variable will be passed from set_up.yml
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Run n8n Docker container
+  community.docker.docker_container:
+    name: n8n
+    image: n8nio/n8n:latest # Use the latest official n8n version
+    state: started
+    recreate: yes # Recreate container if image changes or configuration differs
+    ports:
+      - "5678:5678" # Map host port 5678 to container port 5678
+    volumes:
+      - "{{ n8n_data_path }}:/home/node/.n8n" # Persistence for n8n data
+    env:
+      N8N_HOST: "localhost" # Or the external IP of your VM if you configure a domain
+      N8N_PORT: "5678"
+      GENERIC_TIMEZONE: "America/Bogota" # Adjust to your timezone (e.g., "America/New_York")
+      N8N_PERSONALIZATION_ENABLED: "false"
+      N8N_USER_MANAGEMENT_DISABLED: "true"
+      N8N_SECURE_COOKIE: "false"
+    restart_policy: always # Ensure the container restarts on reboot

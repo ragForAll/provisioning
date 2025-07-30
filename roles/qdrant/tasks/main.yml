@@ -1,0 +1,22 @@
+# n8n-ansible/roles/qdrant/tasks/main.yml
+
+- name: Create persistent data directory for Qdrant
+  ansible.builtin.file:
+    path: qdrant 
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0755'
+
+- name: Run Qdrant Docker container
+  community.docker.docker_container:
+    name: qdrant
+    image: qdrant/qdrant:latest 
+    state: started
+    recreate: yes
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - "qdrant:/qdrant/storage"
+    restart_policy: always

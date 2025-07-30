@@ -1,0 +1,9 @@
+---
+- name: Set up N8N env.
+  hosts: n8n
+  become: true
+  roles:
+    - docker
+    - qdrant
+    - n8n
+
