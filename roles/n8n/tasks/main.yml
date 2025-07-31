@@ -26,3 +26,7 @@
       N8N_USER_MANAGEMENT_DISABLED: "true"
       N8N_SECURE_COOKIE: "false"
     restart_policy: always # Ensure the container restarts on reboot
+    networks:
+      - name: tools 
+        aliases:              
+          - n8n    

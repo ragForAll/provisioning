@@ -1,0 +1,7 @@
+---
+
+- name: Update N8N 
+  hosts: n8n
+  become: true
+  roles:
+    - n8n

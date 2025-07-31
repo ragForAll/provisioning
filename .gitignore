@@ -5,3 +5,5 @@ inventory/*
 *.bak
 *.swp
 *.DS_Store
+
+qdrant/defaults/main.yml

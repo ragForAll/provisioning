@@ -8,6 +8,13 @@
     group: "{{ ansible_user }}"
     mode: '0755'
 
+- name: Create Docker network for Qdrant and other services
+  community.docker.docker_network:
+    name: tools 
+    state: present        
+    driver: bridge        
+  register: docker_network_result
+
 - name: Run Qdrant Docker container
   community.docker.docker_container:
     name: qdrant
@@ -19,4 +26,38 @@
       - "6334:6334"
     volumes:
       - "qdrant:/qdrant/storage"
+    env:
+      QDRANT__SERVICE__API_KEY: "{{ qdrant_api_key }}"
     restart_policy: always
+    networks:
+      - name: tools 
+        aliases:              
+          - qdrant    
+
+
+- name: Wait for Qdrant to be available
+  become: false
+  ansible.builtin.wait_for:
+    host: localhost
+    port: 6333
+    timeout: 300
+    state: started
+  delegate_to: localhost  
+    
+
+- name: Create Blip collection in Qdrant
+  ansible.builtin.uri:
+    url: http://localhost:6333/collections/Blip
+    method: PUT 
+    headers:
+      Content-Type: application/json
+      api-key: "{{ qdrant_api_key }}"
+    body_format: json
+    body:
+      vectors:
+        size: 768
+        distance: Cosine
+    status_code: 200
+  register: create_collection_result
+  failed_when: create_collection_result.status not in [200, 201, 409]
+  changed_when: create_collection_result.status == 201
